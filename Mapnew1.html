@@ -1,0 +1,285 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.4/material.indigo-pink.min.css">
+        <script src="https://storage.googleapis.com/code.getmdl.io/1.0.4/material.min.js"></script>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    </head>
+
+  <head>
+     <!-- Always shows a header, even in smaller screens. -->
+      <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+          <header class="mdl-layout__header">
+              <div class="mdl-layout__header-row">
+      <!-- Add spacer, to align navigation to the right -->
+        <span class="mdl-layout-title">Record Page</span>
+      <div class="mdl-layout-spacer"></div>
+      <!-- Navigation. We hide it in small screens. -->
+      <nav class="mdl-navigation mdl-layout--large-screen-only">
+          <button id = "startRecording" class="mdl-button mdl-js-button" onclick=startRecording()>
+              START RECORDING
+          </button>
+          <button id = "save" class="mdl-button mdl-js-button" onclick=saveData() disabled>
+              SAVE
+          </button>
+          <button id = "clear" class="mdl-button mdl-js-button" onclick=clearData() disabled>
+              CLEAR
+          </button>
+      </nav>
+    </div>
+  </header>
+  <div class="mdl-layout__drawer">
+    <span class="mdl-layout-title">Welcome</span>
+    <nav class="mdl-navigation">
+      <a class="mdl-navigation__link" href="launchPage.html">Launch page</a>
+      <a class="mdl-navigation__link" href="viewPage.html">View Page</a>
+    </nav>
+  </div>
+  <main class="mdl-layout__content">
+    <div class="page-content"><!-- Your content goes here -->  </div>
+  </main>
+</div>
+
+    <title>Geolocation</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+        var countstart=0;
+        var array1=[];
+        function initMap() {
+            var map = new google.maps.Map(document.getElementById('map'), 
+            {
+                center: {lat: -34.397, lng: 150.644},
+                zoom: 6
+            });
+            var infoWindow = new google.maps.InfoWindow({map: map});
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) 
+                {
+                    var posI = 
+                    {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    var marker = new google.maps.Marker(
+                        {
+                        position: posI,
+                        map: map,
+                        title: 'Start point'
+                        });
+                    infoWindow.setPosition(posI);
+                    infoWindow.setContent('Start point');
+                   // map.setCenter(pos);
+                }, function() {
+                    handleLocationError(true, infoWindow, map.getCenter());
+                });
+            } else {
+                 // Browser doesn't support Geolocation
+                handleLocationError(false, infoWindow, map.getCenter());
+            }
+        }
+        function handleLocationError(browserHasGeolocation, infoWindow, posI) {
+            infoWindow.setPosition(posI);
+            infoWindow.setContent(browserHasGeolocation ?
+                        'Error: The Geolocation service failed.' :
+                        'Error: Your browser doesn\'t support geolocation.');
+        }
+        
+        
+        var locationProperty={
+            array:[],
+            startpoint:0,
+            endpoint:0,
+            polyline: null,
+            startTime:{
+                time:0,
+                data:0
+            },
+            endTime:{
+                time:0,
+                data:0
+            }
+        }
+            
+        
+        function locationInitialise(){
+            locationProperty.array=[];
+            locationProperty.startpoint=0;
+            locationProperty.endpoint=0;
+            locationProperty.polyline=null;
+            locationProperty.startTime={
+                time:0,
+                data:0
+            };
+            locationProperty.endTime={
+                time:0,
+                data:0
+            };
+            }
+        
+//-----------------------------------------------------Start recording--------------------------------------------------------            
+        startRecording=function(){
+        var buttonText;
+            countstart++;
+        if (countstart%2!=0){
+            document.getElementById("save").disabled=true;
+            document.getElementById("clear").disabled=true;
+            getLocationUpdate;
+            var markerStart = new google.maps.Marker(
+                        {
+                            position: locationProperty.startpoint,
+                            map: map,
+                            title: 'Start point'
+                        });
+            locationProperty.polyline= new google.maps.Polyline({
+                path: locationProperty.array,
+                geodesic: true,
+                strokeColor: '#FF0000',
+                strokeOpacity: 1.0,
+                strokeWeight: 2
+            });
+            locationProperty.polyline.setMap(map);
+            buttonText="STOP RECORDING";
+        }
+        else{
+            document.getElementById("save").disabled = false;
+            document.getElementById("clear").disabled=false;
+            locationProperty.endpoint=locationProperty.array[locationProperty.array.length];
+            var markerEnd = new google.maps.Marker(
+                        {
+                            position: locationProperty.endpoint,
+                            map: map,
+                            title: 'End point'
+                        });
+            buttonText="START RECORDING";
+        }
+            document.getElementById("startRecording").innerHTML = buttonText;
+        }
+        
+       
+        saveData=function(){ 
+            
+            locationPropertyPDO = {
+					array:[],
+            startpoint:0,
+            endpoint:0,
+            polyline: null,
+            startTime:{
+                time:0,
+                data:0
+            },
+            endTime:{
+                time:0,
+                data:0
+            }
+        
+				};
+            
+            if (typeof(Storage) !== "undefined"){
+               for(var i=0;i<=locationProperty.array.length;i++){
+                locationProperty.arrayPDO[i]=locationProperty.array[i]
+               }
+                locationProperty.startpointPDO=locationProperty.startpoint
+                locationProperty.endpointPDO=locationProperty.endpoint
+                locationProperty.polylinePDO=locationProperty.polyline
+                
+                locationProperty.startTimePDO={
+                    time:0,
+                    data:0 }
+                  locationProperty.endTimePDO={
+                    time:0,
+                    data:0 }  
+                     locationProperty.startTimePDO.timePDO=locationProperty.startTime.time
+              locationProperty.startTimePDO.dataPDO=locationProperty.startTime.data  
+              locationProperty.endTimePDO.timePDO=locationProperty.endTime.time  
+             locationProperty.endTimePDO.dataPDO=locationProperty.endTime.data  
+              
+                var stroageData
+ localStorage.setItem(stroageData, JSON.stringify(locationPropertyPDO));
+            
+            } else {alert("no local storage");}
+        }
+    
+        clearData=function(){
+            var check=confirm("Clear all the data?");
+            if (check==true){
+                locationInitialise();
+                document.getElementById("save").disabled = true;
+            }
+        }
+        
+ 
+        
+        
+        
+//------------------------------------------------------Tracking Location-----------------------------------------------------      
+        function showLocation(position) {
+            // geolacate the current location
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            var pos = 
+                    {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    }
+            locationProperty.array = array1.push(pos);
+            locationProperty.startpoint=locationProperty.array[1];
+            var marker = new google.maps.Marker(
+                        {
+                            position: locationProperty.startpoint,
+                            setPosition: pos,
+                            map: map,
+                            title: 'You are here'         
+                        });
+            }
+            
+         
+         function errorHandler(err) {
+             // error function 
+            if(err.code == 1) {
+               alert("Error: Access is denied!");
+            }
+            
+            else if( err.code == 2) {
+               alert("Error: Position is unavailable!");
+            }
+         }
+         
+         function getLocationUpdate(){
+             // tracking location
+            if(navigator.geolocation){
+               // timeout at 60000 milliseconds (60 seconds)
+               var options = {
+                   timeout:Infinity,
+                   enableHighAccuracy: true,
+                   maximumAge : 0
+                             };
+               geoLoc = navigator.geolocation;
+               watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
+            }
+            
+            else{
+               alert("Sorry, browser does not support geolocation!");
+            }
+
+         }
+        
+        
+      </script>
+    <script async defer
+  src="https://maps.googleapis.com/maps/api/js?v=3&amp;key=&amp;callback=initMap">
+    </script>
+  </body>
+</html>

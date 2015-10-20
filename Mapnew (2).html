@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+    <head>
+    <!-- Material Design Lite -->
+    <script src="https://storage.googleapis.com/code.getmdl.io/1.0.5/material.min.js"></script>
+    <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.5/material.indigo-pink.min.css">
+    <!-- Material Design icon font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  </head>
+  <body>
+    <!-- Simple header with scrollable tabs. -->
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+      <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+          <!-- Title -->
+            <span class="mdl-layout-title">Record Page
+                <label id=time> </label>
+                </span>
+            
+        </div>
+        <!-- Tabs -->
+        <div class="mdl-layout__tab-bar mdl-js-ripple-effect">
+          <button id = "startRecording" class="mdl-button mdl-js-button" onclick=startRecording()>
+              START RECORDING
+          </button>
+          <button id = "save" class="mdl-button mdl-js-button" onclick=saveData() disabled>
+              SAVE
+          </button>
+          <button id = "clear" class="mdl-button mdl-js-button" onclick=clearData() disabled>
+              CLEAR
+          </button>
+        </div>
+      </header>
+      <div class="mdl-layout__drawer">
+        <span class="mdl-layout-title">Title</span>
+          <nav class="mdl-navigation">
+          <a class="mdl-navigation__link" href="launchPage.html">Launch page</a>
+              <a class="mdl-navigation__link" href="viewPage.html">View Page</a>
+      </div>
+      <main class="mdl-layout__content">
+        <section class="mdl-layout__tab-panel is-active" id="startRecording">
+          <div class="page-content"><!-- Your content goes here --></div>
+        </section>
+        <section class="mdl-layout__tab-panel" id="save">
+          <div class="page-content"><!-- Your content goes here --></div>
+        </section>
+        <section class="mdl-layout__tab-panel" id="clear">
+          <div class="page-content"><!-- Your content goes here --></div>
+        </section>
+   
+      </main>
+    </div>
+  </body>
+    
+    
+
+    <title>Geolocation</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+      }
+    </style>
+  <body>
+    <div id="map"></div>
+    <script>
+        var countstart=0;
+        var counttransfer=0;
+        var map;
+        
+        if(localStorage.getItem("dataNumber")==undefined){
+            localStorage.setItem("dataNumber", 0)
+        }
+        
+        
+//------------------------------------------------------------initialise map--------------------------------------------------
+        function initMap(){
+            map = new google.maps.Map(document.getElementById('map'), 
+            {
+                center: {lat: -34.397, lng: 150.644},
+                zoom: 17
+            });
+            var infoWindow = new google.maps.InfoWindow({map: map});
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var posI = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+
+                    map.setCenter(posI);
+                    var markerI= new google.maps.Marker(
+                        {
+                            position: posI,
+                            map: map,
+                            title: 'Start point'
+                        });
+                }, function() {
+                    handleLocationError(true, infoWindow, map.getCenter());
+                });
+            } else {
+                // Browser doesn't support Geolocation
+                handleLocationError(false, infoWindow, map.getCenter());
+            }
+        }
+        function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+            infoWindow.setPosition(pos);
+            infoWindow.setContent(browserHasGeolocation ?
+                        'Error: The Geolocation service failed.' :
+                        'Error: Your browser doesn\'t support geolocation.');
+}
+        
+        
+        
+//-----------------------------------------------------Tracking position------------------------------------------------------
+  function getLocationUpdate(){
+             var options = {
+                   timeout:Infinity,
+                   enableHighAccuracy: true,
+                   frequency: 1000,
+                   maximumAge : 0
+                             };
+               navigator.geolocation.watchPosition(showLocation, errorHandler, options);
+  }
+            
+//------------------------------------------------------<Current location>----------------------------------------------------
+      function showLocation(position) {
+            // geolacate the current location
+            var pos = 
+                    {
+                        lat: Number(position.coords.latitude),
+                        lng: Number(position.coords.longitude)
+                    };
+            locationProperty.array.push(pos);
+            marker = new google.maps.Marker(
+                {
+                            position: pos,
+                            map: map,
+                            icon:'http://www.gpsvisualizer.com/google_maps/icons/circle/red.png',
+                            title: 'You are here'
+                        });
+          locationProperty.marker.push(marker);
+            map.setCenter(pos);
+            }
+            
+//-----------------------------------------------------function that deal with error------------------------------------------
+         function errorHandler(err) {
+             // error function 
+            if(err.code == 1) {
+               alert("Error: Access is denied!");
+            }
+            
+            else if( err.code == 2) {
+               alert("Error: Position is unavailable!");
+            }
+         }
+        
+//-------------------------------------------------<store all data to a property>---------------------------------------------
+        
+        var locationProperty={
+            runName:null,
+            array:[],
+            startpoint:0,
+            endpoint:0,
+            marker:[],
+            polyline: null,
+            startTime:{
+                seconds:0,
+                minutes:0,
+                hours:0
+            },
+            endTime:{
+                seconds:0,
+                minutes:0,
+                hours:0
+            },
+            date:{
+            date:0,
+            day:0,
+            month:0,
+            year:0
+            }
+        }
+            
+//---------------------------------------------------<initialise all the data>------------------------------------------------
+        function locationInitialise(){
+            locationProperty.runName=null;
+            locationProperty.array=[];
+            locationProperty.startpoint=0;
+            locationProperty.endpoint=0;
+            locationProperty.marker=[];
+            locationProperty.polyline=null;
+            locationProperty.startTime={
+                seconds:0,
+                minutes:0,
+                hours:0
+            };
+            locationProperty.endTime={
+                seconds:0,
+                minutes:0,
+                hours:0
+            };
+            }
+            
+//-----------------------------------------------------------<current time>---------------------------------------------------
+            setInterval(currentime, 1000);
+            function currentime() {
+                var currentTime= new Date();
+                document.getElementById("time").innerHTML = currentTime.toLocaleTimeString();
+            }        
+
+            
+
+//-----------------------------------------------------Start recording--------------------------------------------------------            
+        startRecording=function(){
+        var buttonText;
+            countstart++;
+        if (countstart%2!=0){
+            document.getElementById("save").disabled=true;
+            document.getElementById("clear").disabled=true;
+            getLocationUpdate();
+            startDate=new Date();
+            locationProperty.startTime.seconds= startDate.getSeconds();
+            locationProperty.startTime.minutes= startDate.getMinutes();
+            locationProperty.startTime.hours= startDate.getHours();
+            locationProperty.date.date= startDate.getDate();
+            locationProperty.date.day= startDate.getDay();
+            locationProperty.date.month= startDate.getMonth();
+            locationProperty.date.year= startDate.getFullYear();
+            
+            buttonText="STOP RECORDING";
+        }
+        else{
+            document.getElementById("save").disabled = false;
+            document.getElementById("clear").disabled=false;
+            getLocationUpdate(false);
+            locationProperty.endpoint=locationProperty.array[locationProperty.array.length];
+            locationProperty.polyline= new google.maps.Polygon({
+                path:locationProperty.array,
+                strokeColor:"#0000FF",
+                strokeOpacity:0.8,
+                strokeWeight:2,
+                fillColor:"#0000FF",
+                fillOpacity:0.4
+            });
+            var markerE= new google.maps.Marker(
+                        {
+                            position: locationProperty.array[locationProperty.array.length],
+                            map: map,
+                            title: 'End point'
+                        });
+            endDate=new Date();
+            locationProperty.endTime.seconds= endDate.getSeconds();
+            locationProperty.endTime.minutes= endDate.getMinutes();
+            locationProperty.endTime.hours= endDate.getHours();
+                        
+            buttonText="START RECORDING";
+        }
+            document.getElementById("startRecording").innerHTML = buttonText;
+        }
+        
+
+//-------------------------------------------------------<Save data function>-------------------------------------------------
+        
+        saveData=function(){
+            var seen = [];
+            var runName = prompt("Enter a name for your run");
+            locationProperty.runName=runName;
+            
+            
+            
+            var dataNumber = localStorage.getItem("dataNumber");
+            StorageId= "data" + dataNumber;
+            dataNumber++
+            localStorage.setItem("dataNumber",dataNumber);
+            
+            localStorage.setItem(StorageId, JSON.stringify(locationProperty, function(key, val) {
+                if (val != null && typeof val == "object") {
+                   if (seen.indexOf(val) >= 0) {
+                    return;
+                }
+                   seen.push(val);
+                }
+                return val;
+               }))
+            
+        }
+    
+
+//-----------------------------------------------------<Clear button function>------------------------------------------------
+        clearData=function(){
+            
+            var check=confirm("Clear all the data?");
+            if (check==true){
+                locationInitialise();
+                for(var i=0; i<locationProperty.marker.length; i++){
+                    locationProperty.marker[i].setMap(null);
+                }
+                initMap();
+                document.getElementById("save").disabled = true;
+            }
+            
+        }
+        
+        
+
+  
+
+         
+//----------------------------------------------------------------------------------------------------------------------------
+        
+      </script>
+    <script async defer
+  src="https://maps.googleapis.com/maps/api/js?v=3&amp;key=&amp;callback=initMap">
+    </script>
+  </body>
+</html>
